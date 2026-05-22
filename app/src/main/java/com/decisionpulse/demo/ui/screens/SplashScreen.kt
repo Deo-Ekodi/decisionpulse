@@ -1,58 +1,90 @@
 package com.decisionpulse.demo.ui.screens.splash
 
-import androidx.compose.animation.core.*
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.unit.dp
 import com.decisionpulse.demo.ui.components.ParticleCanvas
-import com.decisionpulse.demo.ui.theme.*
+import com.decisionpulse.demo.ui.theme.DPGreen
+import com.decisionpulse.demo.ui.theme.TextMuted
+import com.decisionpulse.demo.ui.theme.TextWhite
 import kotlinx.coroutines.delay
-import androidx.compose.animation.core.tween
 
 @Composable
 fun SplashScreen(onFinished: () -> Unit) {
     var visible by remember { mutableStateOf(false) }
+
     val alpha by animateFloatAsState(
-        targetValue = if (visible) 1f else 0f,
-        animationSpec = tween(900, easing = FastOutSlowInEasing),
-        label = "SplashAlpha"
+        targetValue   = if (visible) 1f else 0f,
+        animationSpec = tween(durationMillis = 800, easing = FastOutSlowInEasing),
+        label         = "SplashAlpha"
+    )
+    val scale by animateFloatAsState(
+        targetValue   = if (visible) 1f else 0.92f,
+        animationSpec = tween(durationMillis = 900, easing = FastOutSlowInEasing),
+        label         = "SplashScale"
     )
 
     LaunchedEffect(Unit) {
         visible = true
-        delay(3000)
+        delay(3200)
         onFinished()
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // Animated particles filling background
-        ParticleCanvas(modifier = Modifier.fillMaxSize().alpha(0.6f))
+        ParticleCanvas(
+            modifier      = Modifier.fillMaxSize().alpha(0.5f),
+            particleCount = 50
+        )
 
         Column(
-            modifier = Modifier.fillMaxSize().alpha(alpha),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            modifier                = Modifier
+                .fillMaxSize()
+                .alpha(alpha)
+                .scale(scale),
+            horizontalAlignment     = Alignment.CenterHorizontally,
+            verticalArrangement     = Arrangement.Center
         ) {
             Text(
-                "DecisionPulse",
+                text  = "DecisionPulse",
                 style = MaterialTheme.typography.displayLarge,
                 color = TextWhite
             )
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(10.dp))
             Text(
-                "AI-Powered Agricultural Intelligence",
+                text  = "AI-Powered Agricultural Intelligence",
                 style = MaterialTheme.typography.titleMedium,
                 color = DPGreen
             )
             Spacer(Modifier.height(6.dp))
             Text(
-                "Nyeri County · Dairy SACCO Demo",
+                text  = "Nyeri County  —  Dairy SACCO",
                 style = MaterialTheme.typography.bodySmall,
                 color = TextMuted
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text  = "decisionpulse.net",
+                style = MaterialTheme.typography.bodySmall,
+                color = TextMuted.copy(alpha = 0.6f)
             )
         }
     }

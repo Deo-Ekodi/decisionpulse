@@ -1,6 +1,7 @@
 package com.decisionpulse.demo.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -13,22 +14,28 @@ import com.decisionpulse.demo.ui.screens.insights.InsightsScreen
 import com.decisionpulse.demo.ui.screens.splash.SplashScreen
 
 @Composable
-fun NavGraph(navController: NavHostController) {
+fun NavGraph(
+    navController: NavHostController,
+    modifier: Modifier = Modifier
+) {
     NavHost(
-        navController = navController,
-        startDestination = Screen.Splash.route
+        navController    = navController,
+        startDestination = Screen.Splash.route,
+        modifier         = modifier
     ) {
         composable(Screen.Splash.route) {
-            SplashScreen(onFinished = {
-                navController.navigate(Screen.Dashboard.route) {
-                    popUpTo(Screen.Splash.route) { inclusive = true }
+            SplashScreen(
+                onFinished = {
+                    navController.navigate(Screen.Dashboard.route) {
+                        popUpTo(Screen.Splash.route) { inclusive = true }
+                    }
                 }
-            })
+            )
         }
 
         composable(Screen.Dashboard.route) {
             DashboardScreen(
-                onViewFarms = { navController.navigate(Screen.FarmRoster.route) },
+                onViewFarms    = { navController.navigate(Screen.FarmRoster.route) },
                 onViewInsights = { navController.navigate(Screen.Insights.route) }
             )
         }
@@ -43,7 +50,7 @@ fun NavGraph(navController: NavHostController) {
         }
 
         composable(
-            route = Screen.FarmDetail.route,
+            route     = Screen.FarmDetail.route,
             arguments = listOf(navArgument("farmCode") { type = NavType.StringType })
         ) { backStackEntry ->
             val farmCode = backStackEntry.arguments?.getString("farmCode") ?: ""

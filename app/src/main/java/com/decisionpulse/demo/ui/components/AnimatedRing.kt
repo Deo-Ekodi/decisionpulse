@@ -1,20 +1,27 @@
 package com.decisionpulse.demo.ui.components
 
-import androidx.compose.animation.core.*
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.animation.core.tween
-import com.decisionpulse.demo.ui.theme.*
+import com.decisionpulse.demo.ui.theme.Border2
+import com.decisionpulse.demo.ui.theme.DPGreen
 
 @Composable
 fun AnimatedRing(
-    progress: Float,           // 0f to 1f
+    progress: Float,
     modifier: Modifier = Modifier,
     trackColor: Color = Border2,
     progressColor: Color = DPGreen,
@@ -23,43 +30,54 @@ fun AnimatedRing(
 ) {
     var started by remember { mutableStateOf(false) }
     val sweep by animateFloatAsState(
-        targetValue = if (started) progress * 300f else 0f,   // 300° max arc
-        animationSpec = tween(
-            durationMillis = durationMs,
-            easing = FastOutSlowInEasing
-        ),
-        label = "RingSweep"
+        targetValue    = if (started) progress * 300f else 0f,
+        animationSpec  = tween(durationMillis = durationMs, easing = FastOutSlowInEasing),
+        label          = "RingSweep"
     )
-
     LaunchedEffect(Unit) { started = true }
 
     Canvas(modifier = modifier) {
-        val inset = strokeWidth / 2
-        val arcSize = Size(size.width - strokeWidth, size.height - strokeWidth)
-        val topLeft = Offset(inset, inset)
+        val inset      = strokeWidth / 2f
+        val arcSize    = Size(size.width - strokeWidth, size.height - strokeWidth)
+        val topLeft    = Offset(inset, inset)
         val startAngle = 120f
 
-        // Track (background)
+        // Track
         drawArc(
-            color = trackColor,
-            startAngle = startAngle,
-            sweepAngle = 300f,
-            useCenter = false,
-            topLeft = topLeft,
-            size = arcSize,
-            style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+            color        = trackColor,
+            startAngle   = startAngle,
+            sweepAngle   = 300f,
+            useCenter    = false,
+            topLeft      = topLeft,
+            size         = arcSize,
+            style        = Stroke(width = strokeWidth, cap = StrokeCap.Round)
         )
 
-        // Progress
         if (sweep > 0f) {
+            // Soft glow (wider, lower-opacity arc behind the progress arc)
+            val glowInset = inset - strokeWidth * 0.35f
             drawArc(
-                color = progressColor,
-                startAngle = startAngle,
-                sweepAngle = sweep,
-                useCenter = false,
-                topLeft = topLeft,
-                size = arcSize,
-                style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+                color        = progressColor.copy(alpha = 0.14f),
+                startAngle   = startAngle,
+                sweepAngle   = sweep,
+                useCenter    = false,
+                topLeft      = Offset(glowInset, glowInset),
+                size         = Size(
+                    size.width - glowInset * 2f,
+                    size.height - glowInset * 2f
+                ),
+                style        = Stroke(width = strokeWidth * 1.7f, cap = StrokeCap.Round)
+            )
+
+            // Progress arc
+            drawArc(
+                color        = progressColor,
+                startAngle   = startAngle,
+                sweepAngle   = sweep,
+                useCenter    = false,
+                topLeft      = topLeft,
+                size         = arcSize,
+                style        = Stroke(width = strokeWidth, cap = StrokeCap.Round)
             )
         }
     }

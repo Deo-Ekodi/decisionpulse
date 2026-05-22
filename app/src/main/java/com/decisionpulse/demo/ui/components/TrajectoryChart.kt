@@ -1,20 +1,32 @@
 package com.decisionpulse.demo.ui.components
 
-import androidx.compose.animation.core.*
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.*
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathMeasure
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.decisionpulse.demo.ui.theme.*
-import androidx.compose.animation.core.tween
+import com.decisionpulse.demo.ui.theme.DPAmber
+import com.decisionpulse.demo.ui.theme.DPGreen
 
 @Composable
 fun TrajectoryChart(
-    readings: List<Double>,     // ordered chronologically
+    readings: List<Double>,
     target: Double = 100.0,
     modifier: Modifier = Modifier,
     lineColor: Color = DPGreen,
@@ -22,87 +34,105 @@ fun TrajectoryChart(
     showGradient: Boolean = true,
     durationMs: Int = 1800
 ) {
+    if (readings.isEmpty()) return
+
     var started by remember { mutableStateOf(false) }
     val progress by animateFloatAsState(
-        targetValue = if (started) 1f else 0f,
-        animationSpec = tween(
-            durationMillis = durationMs,
-            easing = FastOutSlowInEasing
-        ),
-        label = "ChartDraw"
+        targetValue   = if (started) 1f else 0f,
+        animationSpec = tween(durationMillis = durationMs, easing = FastOutSlowInEasing),
+        label         = "ChartDraw"
     )
-
     LaunchedEffect(Unit) { started = true }
-
-    if (readings.isEmpty()) return
 
     Canvas(modifier = modifier) {
         val maxVal = maxOf(readings.max(), target) * 1.08
         val minVal = readings.min() * 0.88
-        val range = maxVal - minVal
+        val range  = (maxVal - minVal).coerceAtLeast(1.0)
 
         val w = size.width
         val h = size.height
 
-        fun xOf(index: Int) = w * index / (readings.size - 1)
+        fun xOf(i: Int)    = w * i / (readings.size - 1).coerceAtLeast(1)
         fun yOf(v: Double) = h - ((v - minVal) / range * h).toFloat()
 
-        // Target dashed line
-        val targetY = yOf(target)
-        val dashWidth = 12f; val dashGap = 8f
-        var x = 0f
-        while (x < w) {
+        // Dashed target line
+        val targetY   = yOf(target)
+        val dashW     = 10f
+        val dashGap   = 7f
+        var dx        = 0f
+        while (dx < w) {
             drawLine(
-                color = DPAmber.copy(alpha = 0.45f),
-                start = Offset(x, targetY),
-                end = Offset(minOf(x + dashWidth, w), targetY),
+                color       = DPAmber.copy(alpha = 0.4f),
+                start       = Offset(dx, targetY),
+                end         = Offset((dx + dashW).coerceAtMost(w), targetY),
                 strokeWidth = 1.5.dp.toPx()
             )
-            x += dashWidth + dashGap
+            dx += dashW + dashGap
         }
 
-        // Build full path
+        // Build smooth bezier path
         val fullPath = Path().apply {
             readings.forEachIndexed { i, v ->
-                val px = xOf(i); val py = yOf(v)
-                if (i == 0) moveTo(px, py) else lineTo(px, py)
+                val x = xOf(i)
+                val y = yOf(v)
+                if (i == 0) {
+                    moveTo(x, y)
+                } else {
+                    val prevX = xOf(i - 1)
+                    val prevY = yOf(readings[i - 1])
+                    val cpX   = (prevX + x) / 2f
+                    cubicTo(cpX, prevY, cpX, y, x, y)
+                }
             }
         }
 
-        // Clip to animated progress (left → right reveal)
-        val pm = PathMeasure()
+        // Clip to animated progress
+        val pm          = PathMeasure()
         pm.setPath(fullPath, false)
-        val totalLength = pm.length
         val clippedPath = Path()
-        pm.getSegment(0f, totalLength * progress, clippedPath, true)
+        pm.getSegment(0f, pm.length * progress, clippedPath, true)
 
-        // Gradient fill under line
+        // Gradient fill
         if (showGradient) {
+            val lastIdx  = ((readings.size - 1) * progress).toInt().coerceIn(0, readings.size - 1)
             val fillPath = Path().apply {
                 addPath(clippedPath)
-                // close down to bottom
-                val lastIdx = (readings.size * progress).toInt().coerceAtMost(readings.size - 1)
                 lineTo(xOf(lastIdx), h)
                 lineTo(0f, h)
                 close()
             }
             drawPath(
-                path = fillPath,
+                path  = fillPath,
                 brush = Brush.verticalGradient(
-                    colors = listOf(lineColor.copy(alpha = 0.25f), lineColor.copy(alpha = 0f))
+                    colors = listOf(lineColor.copy(alpha = 0.22f), lineColor.copy(alpha = 0f))
                 )
             )
         }
 
         // Chart line
         drawPath(
-            path = clippedPath,
+            path  = clippedPath,
             color = lineColor,
             style = Stroke(
                 width = strokeWidth.toPx(),
-                cap = StrokeCap.Round,
-                join = StrokeJoin.Round
+                cap   = StrokeCap.Round,
+                join  = StrokeJoin.Round
             )
         )
+
+        // End-point dot
+        if (progress > 0.98f && readings.isNotEmpty()) {
+            val lastI = readings.size - 1
+            drawCircle(
+                color  = lineColor,
+                radius = strokeWidth.toPx() * 2f,
+                center = Offset(xOf(lastI), yOf(readings[lastI]))
+            )
+            drawCircle(
+                color  = lineColor.copy(alpha = 0.25f),
+                radius = strokeWidth.toPx() * 4f,
+                center = Offset(xOf(lastI), yOf(readings[lastI]))
+            )
+        }
     }
 }
