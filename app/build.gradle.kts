@@ -30,10 +30,9 @@ tasks.register("bumpVersionCode") {
     }
 }
 
-tasks.configureEach {
-    if (name == "assembleRelease" || name == "bundleRelease") {
-        dependsOn("bumpVersionCode")
-    }
+afterEvaluate {
+    tasks.matching { it.name == "assembleRelease" || it.name == "bundleRelease" }
+        .configureEach { dependsOn("bumpVersionCode") }
 }
 // ──────────────────────────────────────────────────────────────────────────────
 
@@ -79,7 +78,7 @@ android {
             val out = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
             out.outputFileName = when (variant.buildType.name) {
                 "release" -> "DPulse-v${variant.versionName}.apk"
-                else      -> "DPulse-v${variant.versionName}-${variant.buildType.name}.apk"
+                else      -> "DPulse-v${variant.versionName.removeSuffix("-debug")}-${variant.buildType.name}.apk"
             }
         }
     }
@@ -102,7 +101,6 @@ android {
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
-    implementation(libs.material)
     
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

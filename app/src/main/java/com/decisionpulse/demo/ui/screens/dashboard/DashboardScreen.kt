@@ -27,6 +27,7 @@ import com.decisionpulse.demo.ui.AppState
 import com.decisionpulse.demo.ui.components.*
 import com.decisionpulse.demo.ui.theme.*
 import kotlinx.coroutines.delay
+import androidx.compose.ui.draw.clip
 
 @Composable
 fun DashboardScreen(
@@ -377,7 +378,7 @@ private fun SaccoMatrixRow(
         Spacer(Modifier.height(6.dp))
         LinearProgressIndicator(
             progress   = { progress },
-            modifier   = Modifier.fillMaxWidth().height(5.dp).androidx.compose.ui.draw.clip(androidx.compose.foundation.shape.RoundedCornerShape(3.dp)),
+            modifier   = Modifier.fillMaxWidth().height(5.dp).clip(RoundedCornerShape(3.dp)),
             color      = color,
             trackColor = com.decisionpulse.demo.ui.theme.Border2
         )
