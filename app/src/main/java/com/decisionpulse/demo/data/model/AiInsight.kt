@@ -5,7 +5,8 @@ enum class InsightType { PERFORMANCE, COST, ALERT, OPPORTUNITY }
 
 data class AiInsight(
     val id: Int,
-    val farmCode: String?,       // null = SACCO-wide insight
+    val saccoId: String?,
+    val farmCode: String?,
     val title: String,
     val body: String,
     val action: String,

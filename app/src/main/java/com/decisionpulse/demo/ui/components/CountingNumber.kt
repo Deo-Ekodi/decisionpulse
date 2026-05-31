@@ -1,13 +1,14 @@
 package com.decisionpulse.demo.ui.components
 
-import androidx.compose.animation.core.*
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import kotlin.math.roundToInt
-import androidx.compose.animation.core.tween
 
 @Composable
 fun CountingNumber(
@@ -21,14 +22,10 @@ fun CountingNumber(
 ) {
     var start by remember { mutableStateOf(false) }
     val animatedValue by animateFloatAsState(
-        targetValue = if (start) target.toFloat() else 0f,
-        animationSpec = tween(
-            durationMillis = durationMs,
-            easing = FastOutSlowInEasing
-        ),
-        label = "CountingNumber"
+        targetValue   = if (start) target.toFloat() else 0f,
+        animationSpec = tween(durationMillis = durationMs, easing = FastOutSlowInEasing),
+        label         = "CountingNumber"
     )
-
     LaunchedEffect(Unit) { start = true }
 
     val displayed = if (decimals == 0) {

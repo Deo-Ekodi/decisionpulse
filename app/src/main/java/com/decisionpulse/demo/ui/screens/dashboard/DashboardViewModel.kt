@@ -9,6 +9,4 @@ import kotlinx.coroutines.flow.StateFlow
 class DashboardViewModel : ViewModel() {
     private val _summary = MutableStateFlow(MockRepository.saccoSummary)
     val summary: StateFlow<SaccoSummary> = _summary
-
-    val coordinatorName: String = MockRepository.coordinatorName
 }

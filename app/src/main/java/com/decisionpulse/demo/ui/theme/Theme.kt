@@ -23,7 +23,7 @@ private val DarkColorScheme = darkColorScheme(
 fun DecisionPulseTheme(content: @Composable () -> Unit) {
     MaterialTheme(
         colorScheme = DarkColorScheme,
-        typography = Typography,
-        content = content
+        typography  = Typography,
+        content     = content
     )
 }

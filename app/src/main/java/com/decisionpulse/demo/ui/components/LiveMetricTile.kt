@@ -29,11 +29,11 @@ fun LiveMetricTile(
         Text(label.uppercase(), style = MaterialTheme.typography.labelSmall)
         Spacer(Modifier.height(6.dp))
         CountingNumber(
-            target = value,
-            suffix = suffix,
+            target   = value,
+            suffix   = suffix,
             decimals = decimals,
-            style = MaterialTheme.typography.headlineLarge,
-            color = accent
+            style    = MaterialTheme.typography.headlineLarge,
+            color    = accent
         )
     }
 }

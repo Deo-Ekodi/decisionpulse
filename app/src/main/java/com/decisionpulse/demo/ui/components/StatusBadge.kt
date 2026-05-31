@@ -14,9 +14,9 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun StatusBadge(label: String, color: Color) {
     Text(
-        text = label,
-        style = MaterialTheme.typography.labelSmall,
-        color = color,
+        text     = label,
+        style    = MaterialTheme.typography.labelSmall,
+        color    = color,
         modifier = Modifier
             .clip(RoundedCornerShape(4.dp))
             .background(color.copy(alpha = 0.14f))

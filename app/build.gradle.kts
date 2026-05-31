@@ -30,9 +30,10 @@ tasks.register("bumpVersionCode") {
     }
 }
 
-afterEvaluate {
-    tasks.matching { it.name == "assembleRelease" || it.name == "bundleRelease" }
-        .configureEach { dependsOn("bumpVersionCode") }
+tasks.configureEach {
+    if (name == "assembleRelease" || name == "bundleRelease") {
+        dependsOn("bumpVersionCode")
+    }
 }
 // ──────────────────────────────────────────────────────────────────────────────
 

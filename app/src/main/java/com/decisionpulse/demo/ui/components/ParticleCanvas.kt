@@ -6,17 +6,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import com.decisionpulse.demo.ui.theme.DPGreen
 import com.decisionpulse.demo.ui.theme.DPBlue
+import com.decisionpulse.demo.ui.theme.DPGreen
 import kotlin.math.*
 import kotlin.random.Random
-import androidx.compose.animation.core.tween
 
 private data class Particle(
     val startX: Float, val startY: Float,
     val vx: Float, val vy: Float,
     val radius: Float, val color: Color,
-    val phase: Float  // offset for sin wave motion
+    val phase: Float
 )
 
 @Composable
@@ -27,11 +26,11 @@ fun ParticleCanvas(modifier: Modifier = Modifier, particleCount: Int = 55) {
             Particle(
                 startX = Random.nextFloat(),
                 startY = Random.nextFloat(),
-                vx = (Random.nextFloat() - 0.5f) * 0.12f,
-                vy = (Random.nextFloat() - 0.5f) * 0.12f,
+                vx     = (Random.nextFloat() - 0.5f) * 0.12f,
+                vy     = (Random.nextFloat() - 0.5f) * 0.12f,
                 radius = Random.nextFloat() * 3.5f + 1f,
-                color = colors.random(),
-                phase = Random.nextFloat() * 2 * PI.toFloat()
+                color  = colors.random(),
+                phase  = Random.nextFloat() * 2 * PI.toFloat()
             )
         }
     }
@@ -39,9 +38,7 @@ fun ParticleCanvas(modifier: Modifier = Modifier, particleCount: Int = 55) {
     val infiniteTransition = rememberInfiniteTransition(label = "particles")
     val time by infiniteTransition.animateFloat(
         initialValue = 0f, targetValue = 1000f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 16_000, easing = LinearEasing)
-        ),
+        animationSpec = infiniteRepeatable(animation = tween(16_000, easing = LinearEasing)),
         label = "time"
     )
 
@@ -50,11 +47,7 @@ fun ParticleCanvas(modifier: Modifier = Modifier, particleCount: Int = 55) {
             val t = time * 0.002f
             val x = ((p.startX + p.vx * t + sin(t * 0.7f + p.phase) * 0.04f) % 1f + 1f) % 1f
             val y = ((p.startY + p.vy * t + cos(t * 0.5f + p.phase) * 0.04f) % 1f + 1f) % 1f
-            drawCircle(
-                color = p.color,
-                radius = p.radius,
-                center = Offset(x * size.width, y * size.height)
-            )
+            drawCircle(color = p.color, radius = p.radius, center = Offset(x * size.width, y * size.height))
         }
     }
 }

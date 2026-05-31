@@ -12,6 +12,8 @@ val DPRedDim      = Color(0xFF5C1020)
 val DPBlue        = Color(0xFF4A9EFF)
 val DPBlueDim     = Color(0xFF1A3A6C)
 val DPPurple      = Color(0xFFA080F0)
+val DPPurpleDim   = Color(0xFF3A2880)
+val DPCyan        = Color(0xFF20D0C8)
 
 // Backgrounds
 val BgDeep        = Color(0xFF080A0F)
